@@ -30,6 +30,15 @@ npm install --save-dev hardhat
 
 ```bash
 npx hardhat init
+
+
+
+also install 
+
+npm install @nomicfoundation/hardhat-web3-v4 web3-utils @openzeppelin/contracts @swisstronik/web3-plugin-swisstronik web3 --save-dev
+
+
+
 ```
 
 4. Open the project in VS Code:
@@ -53,11 +62,12 @@ npx hardhat vars set PRIVATE_KEY
 
 ```javascript
 require("@nomicfoundation/hardhat-toolbox");
+require("@nomicfoundation/hardhat-web3-v4");
 
 // Remember to use the private key of a testing account
 // For better security practices, it's recommended to use npm i dotenv for storing secret variables
 
-// use configuration-variables in hardhat to set PRIVATE_KEY variable
+//use configuration-variables in hardhat to set PRIVATE_KEY variable
 const PRIVATE_KEY = vars.get("PRIVATE_KEY");
 
 module.exports = {
@@ -70,6 +80,7 @@ module.exports = {
     },
   },
 };
+
 ```
 
 **2. Creating the ERC-721 Smart Contract**
@@ -156,64 +167,38 @@ npx hardhat run scripts/deploy.js --network swisstronik
 4. Copy the deployed contract address.
 
 **4. Minting 1 ERC-721 Token**
+`
 
-1. Install SwisstronikJS:
-
-```bash
-npm install @swisstronik/utils
-```
-
-2. Create a new file named `mint.js` in the `scripts` folder.
-3. Paste the following script:
+1. Create a new file named `mint.js` in the `scripts` folder.
+2. Paste the following script:
 
 ```javascript
 // Import necessary modules from Hardhat and SwisstronikJS
 const hre = require("hardhat");
-const { encryptDataField, decryptNodeResponse } = require("@swisstronik/utils");
+const { SwisstronikPlugin } = require("@swisstronik/web3-plugin-swisstronik");
 
-// Function to send a shielded transaction using the provided signer, destination, data, and value
-const sendShieldedTransaction = async (signer, destination, data, value) => {
-    // Get the RPC link from the network configuration
-    const rpcLink = hre.network.config.url;
-
-    // Encrypt transaction data
-    const [encryptedData] = await encryptDataField(rpcLink, data);
-
-    // Construct and sign transaction with encrypted data
-    return await signer.sendTransaction({
-        from: signer.address,
-        to: destination,
-        data: encryptedData,
-        value,
-    });
-};
+hre.web3.registerPlugin(new SwisstronikPlugin(hre.network.config.url));
 
 async function main() {
     const replace_contractAddress = " <Replace with Contract Address>  ";
-    const [signer] = await hre.ethers.getSigners();
-    const replace_contractFactory = await hre.ethers.getContractFactory("TestNFT");
-    const contract = replace_contractFactory.attach(replace_contractAddress);
+    const [from] = await hre.web3.eth.getAccounts();
+    const contractFactory = await hre.ethers.getContractFactory("TestNFT");
 
-    const replace_functionName = "safeMint"; // Corrected function name
-    const replace_functionArgs = ["  <Replace with Recipient address > "]; // Recipient address
+    const ABI = JSON.parse(contractFactory.interface.formatJson());
+    const contract = new hre.web3.eth.Contract(ABI, replace_contractAddress);
+    const replace_functionArgs = "<Replace with Wallet Address to mint NFT>"; // Recipient address
 
     const amountMinted = hre.ethers.formatEther("1000000000000000000"); // Set the desired amount to mint (optional)
-
     // Display message only if amountMinted is defined
-    if (amountMinted) {
-        console.log(`Minting ${amountMinted} token...`);
-    } else {
-        console.log(`Minting a token...`);
-    }
+    console.log(`Minting ${amountMinted ? amountMinted : 1} token...`);
 
     try {
-        const transaction = await sendShieldedTransaction(signer, replace_contractAddress, contract.interface.encodeFunctionData(replace_functionName, replace_functionArgs), 0);
-        console.log(`Transaction submitted! Transaction hash: ${transaction.hash}`);
-        await transaction.wait();
+        const transaction = await contract.methods.safeMint(replace_functionArgs).send({ from });
+        console.log("Transaction submitted! Transaction hash:", transaction);
 
         // Display success message with recipient address
-        console.log(`Transaction completed successfully! ✅  ${amountMinted}  Non-Fungible Token minted to ${replace_functionArgs[0]}.`);
-        console.log(`Transaction hash: ${transaction.hash}`);
+        console.log(`Transaction completed successfully! ✅  ${amountMinted}  Non-Fungible Token minted to ${replace_functionArgs}`);
+        console.log("Transaction hash:", transaction.logs[0].transactionHash);
     } catch (error) {
         console.error(`Transaction failed! Could not mint NFT.`);
         console.error(error);
