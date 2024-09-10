@@ -26,18 +26,18 @@ cd MyERC721Token
 npm install --save-dev hardhat
 ```
 
-3. Initialize a Hardhat project:
+3. Initialize a Hardhat project :
 
 ```bash
 npx hardhat init
+```
 
 
+Install some necessary hardhat tools,  web3-utils, openzepplin contracts and swisstronik plugin 
 
-also install 
+```
 
 npm install @nomicfoundation/hardhat-web3-v4 web3-utils @openzeppelin/contracts @swisstronik/web3-plugin-swisstronik web3 --save-dev
-
-
 
 ```
 
@@ -126,35 +126,26 @@ contract TestNFT is ERC721, Ownable {
 2. Paste the following script:
 
 ```javascript
+
 const { ethers } = require("hardhat");
-
-
 async function main() {
     // Get the ContractFactory and Signers here.
     const [deployer] = await ethers.getSigners();
-
-
     console.log("Deploying contracts with the account:", deployer.address);
-
-
     // We get the contract to deploy
     const TokenContract = await ethers.getContractFactory("TestNFT");
-   
     // Deploy the contract and pass the initialOwner address
     const initialOwner = deployer.address;
     const myToken = await TokenContract.deploy(initialOwner);
-
-
-    console.log("Non Fungible Token Contract address:", myToken.target);
+    console.log("Non-Fungible Token Contract address:", myToken.target);
 }
-
-
 main()
     .then(() => process.exit(0))
     .catch((error) => {
         console.error(error);
         process.exit(1);
     });
+
 
 ```
 
@@ -176,42 +167,38 @@ npx hardhat run scripts/deploy.js --network swisstronik
 // Import necessary modules from Hardhat and SwisstronikJS
 const hre = require("hardhat");
 const { SwisstronikPlugin } = require("@swisstronik/web3-plugin-swisstronik");
-
 hre.web3.registerPlugin(new SwisstronikPlugin(hre.network.config.url));
-
 async function main() {
-    const replace_contractAddress = " <Replace with Contract Address>  ";
+    const replace_contractAddress = "<Replace_Contract_Address>";
     const [from] = await hre.web3.eth.getAccounts();
     const contractFactory = await hre.ethers.getContractFactory("TestNFT");
-
     const ABI = JSON.parse(contractFactory.interface.formatJson());
     const contract = new hre.web3.eth.Contract(ABI, replace_contractAddress);
-    const replace_functionArgs = "<Replace with Wallet Address to mint NFT>"; // Recipient address
-
-    const amountMinted = hre.ethers.formatEther("1000000000000000000"); // Set the desired amount to mint (optional)
-    // Display message only if amountMinted is defined
-    console.log(`Minting ${amountMinted ? amountMinted : 1} token...`);
-
+    const replace_functionArgs = "<Replace_Wallet_Address>"; // Recipient address
+    console.log("Minting 1 token...");
     try {
         const transaction = await contract.methods.safeMint(replace_functionArgs).send({ from });
-        console.log("Transaction submitted! Transaction hash:", transaction);
-
+        console.log("Transaction submitted! Transaction details:", transaction);
         // Display success message with recipient address
-        console.log(`Transaction completed successfully! ✅  ${amountMinted}  Non-Fungible Token minted to ${replace_functionArgs}`);
-        console.log("Transaction hash:", transaction.logs[0].transactionHash);
+        console.log(`Transaction completed successfully! ✅ Non-Fungible Token minted to ${replace_functionArgs}`);
+        console.log("Transaction hash:", transaction.transactionHash);
     } catch (error) {
         console.error(`Transaction failed! Could not mint NFT.`);
         console.error(error);
     }
 }
-
-// Using async/await pattern to handle errors properly
 main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
 });
-
 ```
+3. Run the mint script:
+
+```bash
+npx hardhat run scripts/mint.js --network swisstronik
+```
+
+
 
 
 **5. Publishing the Code to GitHub**
@@ -250,8 +237,3 @@ git push -u origin main
 
 
 
-```
- npx hardhat run scripts/deploy.js --network swisstronik
-Deploying contracts with the account: 0x8Ab77353aC866B7Ab690890e620c249A8D3e92D0
-Non Fungible Token Contract address: 0xe7bc1B0dDA2956809a512F8963c007E761b479f1
-```
