@@ -9,7 +9,7 @@ contract TestNFT is ERC721, Ownable {
     uint256 private _nextTokenId;
 
     constructor(address initialOwner)
-        ERC721("TestNFT", "TNFT")
+        ERC721("FaltuNFT", "FNFT")
         Ownable(initialOwner)
     {}
 
