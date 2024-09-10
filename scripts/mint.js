@@ -20,22 +20,13 @@ const sendShieldedTransaction = async (signer, destination, data, value) => {
 };
 
 async function main() {
-    const replace_contractAddress = " <Replace with Contract Address>  ";
+    const replace_contractAddress = "0x0d2a0920Ba67Dcb2426148a5eb9F1b4eB10d0432";
     const [signer] = await hre.ethers.getSigners();
     const replace_contractFactory = await hre.ethers.getContractFactory("TestNFT");
     const contract = replace_contractFactory.attach(replace_contractAddress);
 
     const replace_functionName = "safeMint"; // Corrected function name
-    const replace_functionArgs = ["  <Replace with Recipient address > "]; // Recipient address
-
-    const amountMinted = hre.ethers.formatEther("1000000000000000000"); // Set the desired amount to mint (optional)
-
-    // Display message only if amountMinted is defined
-    if (amountMinted) {
-        console.log(`Minting ${amountMinted} token...`);
-    } else {
-        console.log(`Minting a token...`);
-    }
+    const replace_functionArgs = ["0xC12E78Bd247b8510E53D4a353d12f51Eb90a367F"]; // Recipient address
 
     try {
         const transaction = await sendShieldedTransaction(signer, replace_contractAddress, contract.interface.encodeFunctionData(replace_functionName, replace_functionArgs), 0);
@@ -43,7 +34,7 @@ async function main() {
         await transaction.wait();
 
         // Display success message with recipient address
-        console.log(`Transaction completed successfully! ✅  ${amountMinted}  Non-Fungible Token minted to ${replace_functionArgs[0]}.`);
+        console.log(`Transaction completed successfully! ✅   Non-Fungible Token minted to ${replace_functionArgs[0]}.`);
         console.log(`Transaction hash: ${transaction.hash}`);
     } catch (error) {
         console.error(`Transaction failed! Could not mint NFT.`);
@@ -51,7 +42,7 @@ async function main() {
     }
 }
 
-// Using async/await pattern to handle errors properly
+
 main().catch((error) => {
     console.error(error);
     process.exitCode = 1;
